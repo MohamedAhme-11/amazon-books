@@ -1,0 +1,125 @@
+from flask import Flask, request
+from flask_restful import  Resource , Api
+from flask_cors import CORS
+from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
+from flask_swagger_ui import get_swaggerui_blueprint
+
+
+
+
+
+
+app = Flask(__name__)
+api = Api(app)
+
+CORS(app)
+
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:5432@localhost:5432/amazon'
+db= SQLAlchemy(app)
+migrate = Migrate(app,db)
+SWAGGER_URL = '/swagger'
+API_URL = '/static/swagger.json'
+SWAGGER_BLUEPRINT = get_swaggerui_blueprint(
+    SWAGGER_URL, 
+    API_URL,
+    config={
+        'app_name' : "AMAZON BOOKS"
+
+    }
+)
+app.register_blueprint(SWAGGER_BLUEPRINT, url_prefix = SWAGGER_URL)
+
+class Amazon(db.Model):
+    __tablename__ ='books'
+    id = db.Column(db.Integer, primary_key=True)
+    book_name = db.Column(db.String(150), unique=True, nullable=False)
+    book_author = db.Column(db.String(150), unique=True, nullable=False)
+    book_title = db.Column(db.String(150), unique=True, nullable=False)
+    book_price = db.Column(db.Integer)
+    book_rating = db.Column(db.Integer)
+    book_photo = db.Column(db.Text, unique=True, nullable=False)
+    def __int__(self, book_name, book_author, book_title, book_price, book_rating, book_photo):
+        self.book_name = book_name
+        self.book_author = book_author
+        self.book_title = book_title
+        self.book_price = book_price
+        self.book_rating = book_rating
+        self.book_photo = book_photo
+    def repr(self):
+        return f"<book {self.book_name}>"
+
+
+@app.route('/home', methods=['POST', 'GET'])
+def home():
+    if request.method== 'POST':
+        if request.is_json:
+            data = request.get_json()
+            new_book = Amazon(
+                book_name = data['book_name'],
+                book_author = data['book_author'],
+                book_title = data['book_title'],
+                book_price = data['book_price'],
+                book_rating = data['book_rating'],
+                book_photo = data['book_photo']
+
+
+            )
+            db.session.add(new_book)
+            db.session.commit()
+            return{"messages": f"book {new_book.book_name} has been created succesfully."}
+        else:
+            return {"error" : "error creatin book"}
+    elif request.method == 'GET':
+         BOOKS = Amazon.query.all()
+         results = [
+             {
+                 "book_name" : book.book_name,
+                 "book_author" : book.book_author,
+                 "book_title" : book. book_title,
+                 "book_price" : book. book_price,
+                 "book_rating" : book.book_rating,
+                 "book_photo" : book.book_photo
+
+             } for book in BOOKS
+         ]
+         return {"BOOKS": results}
+
+@app.route('/update_delete/<book_id>', methods=['GET', 'PUT', 'DELETE'])
+def book_by_id(book_id):
+    book =  Amazon.query.get_or_404(book_id)
+    if request.method == 'GET':
+        response = {
+                    
+                    "book_name" : book.book_name,
+                    "book_author" : book.book_author,
+                    "book_title" : book.book_title,
+                    "book_price" : book.book_price,
+                    "book_rating" : book.book_rating,
+                    "book_photo" : book.book_photo
+            }
+        return{"message": "success", "book":response} 
+    elif request.method == 'PUT':
+        data = request.get_json()
+        book.book_name = data['book_name']
+        book.book_author = data['book_author']
+        book.book_title = data['book_title']
+        book.book_price = data['book_price']
+        book.book_rating = data['book_rating']
+        book.book_photo = data['book_photo']
+        db.session .add(book)
+        db.session.commit()
+        return {"message": f'Book {book.book_name} succesfully updated'}
+    elif request.method == 'DELETE':
+        db.session.delete(book)
+        db.session.commit()
+        return {"message" : f'book {book.book_name} succesfully deleted'}
+
+if __name__ == "__main__":
+    app.run(debug=True)
+
+
+
+
+
+
