@@ -1,0 +1,250 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+      "description": "MAKE AMAZON BOOKS PAGE USING FLASK REST API",
+      "version": "1.0.0",
+      "title": "AMAZON BOOKS PAGE",
+      "license": {
+        "name": "MIT",
+        "url": "https://opensource.org/licenses/MIT"
+      }
+   },  
+
+    "tags": [
+    {
+      "name": "BOOKS API",
+      "description": "Test BOOKS API"
+    }
+  ],
+  "servers": [
+    {
+    "url": "/"
+    }
+],
+
+"components": {
+    "schemas": {
+        "GET & POST": {
+            "type": "object",
+            "properties": {
+                "book_name": {
+                "type": "string"
+                },
+                "book_title": {
+                "type": "string"
+                },
+                "book_author": {
+                "type": "string"
+                },
+                "book_price": {
+                    "type": "string"
+                },
+                "book_rating": {
+                    "type": "string"
+                },
+                "book_photo": {
+                    "type": "string"
+                }
+            }
+        },
+        "Id":{
+            "type" : "integer",
+            "properties" : {
+                "name" : {
+                    "type" : "integer"
+                }
+            }
+    },
+        "UPDATE & DELETE":{
+          "type": "object",
+          "properties": {
+            "book_name": {
+            "type": "string"
+            },
+            "book_title": {
+            "type": "string"
+            },
+            "book_author": {
+            "type": "string"
+            },
+            "book_price": {
+                "type": "string"
+            },
+            "book_rating": {
+                "type": "string"
+            },
+            "book_photo": {
+                "type": "string"
+            }
+        }
+        }
+    }
+},
+"paths": {
+    "/home": {
+        "post": {
+        "tags": [
+            "Add todo to API"
+        ],
+        "summary": "ADD NEW BOOK",
+        "requestBody": {
+        "description": "Post New todo To Database",
+        "required": true,
+        "content": {
+            "application/json": {
+            "schema": {
+                "$ref": "#/components/schemas/TodoList"
+                }
+            }
+        }
+        },
+        "responses": {
+            "200": {
+                "description": "OK",
+                "schema": {
+                "$ref": "#/components/schemas/TodoList"
+                }
+            },
+            "404": {
+                "description": "NOT FOUND",
+                "schema": {
+                "$ref": "#/components/schemas/TodoList"
+                }
+        }
+        }
+        },
+        "get" :{
+            "tags": [
+                "Get All todos from API"
+            ],
+            "summary": "Get All BOOKS",
+           
+            "responses": {
+            "200": {
+                "description": "OK",
+                "schema": {
+                "$ref": "#/components/schemas/TodoList"
+                }
+            },
+            "404": {
+                "description": "NOT FOUND",
+                "schema": {
+                "$ref": "#/components/schemas/TodoList"
+                }
+        }
+        }
+        }
+    },
+
+   
+    "/update_delete/{id}":{
+
+        "get" :{
+            "tags": [
+                "Get todos from API"
+            ],
+            "summary": "Get A BOOK",
+            "parameters": [{
+              "name": "id",
+              "in": "path",
+              "description": "todo id to update",
+              "required": true,
+              "type": "integer",
+              "schema" : {
+                  "$ref": "#/components/schemas/Id"
+              }
+            }],
+           
+            "responses": {
+            "200": {
+                "description": "OK",
+                "schema": {
+                "$ref": "#/components/schemas/TodoList"
+                }
+            },
+            "404": {
+                "description": "NOT FOUND",
+                "schema": {
+                "$ref": "#/components/schemas/TodoList"
+                }
+        }
+        }
+        },
+       
+        "put": {
+        "tags": [
+            "Update todos on API"
+        ],
+        "parameters": [{
+            "name": "id",
+            "in": "path",
+            "description": "todo id to update",
+            "required": true,
+            "type": "integer",
+            "schema" : {
+                "$ref": "#/components/schemas/Id"
+            }
+        }],
+        "summary": "UPDATE BOOK",
+        "requestBody": {
+        "description": "Update Existing todo On Database",
+        "required": true,
+        "content": {
+            "application/json": {
+                "schema": {
+                    "$ref": "#/components/schemas/update"
+                }
+            }
+        }
+        },
+        "responses": {
+            "200": {
+                "description": "OK",
+                "schema": {
+                "$ref": "#/components/schemas/TodoList"
+                }
+            },
+            "404": {
+                "description": "NOT FOUND",
+                "schema": {
+                "$ref": "#/components/schemas/TodoList"
+                }
+        }
+        }
+    },
+    "delete": {
+        "tags": [
+            "Delete todo to API"
+        ],
+        "parameters": [{
+            "name": "id",
+            "in": "path",
+            "description": "product id to delete",
+            "required": true,
+            "type": "integer",
+            "schema" : {
+                "$ref": "#/components/schemas/Id"
+            }
+        }],
+        "summary": "DELETE BOOK",
+        
+        "responses": {
+            "200": {
+                "description": "OK",
+                "schema": {
+                "$ref": "#/components/schemas/TodoList"
+                }
+            },
+            "404": {
+                "description": "NOT FOUND",
+                "schema": {
+                "$ref": "#/components/schemas/TodoList"
+                }
+        }
+        }
+    }
+    }
+ }
+}
+
+
