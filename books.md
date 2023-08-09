@@ -1,7 +1,17 @@
+# Amazon-Books-Documentation:ghost:
+**why the project & what is the purpose from the project?** 🧑‍💻
 
+-the purpose of the project making it useful for the user in searching for a specific book ina short time. 
 
-# Amazon-Books-Documentation:ghost: 
-**Sample API collection**
+**how to run the project** 🤖
+
+-first you have to download the requirements file the file have some libraries you need it after you create your virtualenviroment.
+
+-second you will run the project from the visual studio prompt(cmd).
+
+-third the user have to take the port   and add(/home) after it for get all the books or add a new book but have to add all the book info ex(book_name, book_author, book_title, book_price, book_rating, book_photo), all of this info are required in adding and updating, for updating or get getting a  specific by its id will add instead of (/home),  will add (/update_delete).
+
+**Sample API collection** 🔭 
 
 -This collection conntains sample requests from this [Api]( http://127.0.0.1:5000)
 
@@ -12,10 +22,11 @@
     .get a specific book
     .Delete a specific book
     .Update a specific book
+**here will some demo for the CRUD** 🦾
 
 -GET all books 🤔
 
-**API endpoint ro *GET* all books in the database**
+**API endpoint ro *GET* all books in the database** 👽
 
     -A successful registration will result in a *HTTP 200* status code
   ```     -{
@@ -66,7 +77,7 @@
 
 -add new book 👀
 
-**API endpoint ro *ADD* a new book in the database**
+**API endpoint ro *ADD* a new book in the database** 👾
 
   -A successful registration will result in a*HTTP 200*status code
 ```
