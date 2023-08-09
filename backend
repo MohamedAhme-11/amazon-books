@@ -1,45 +1,45 @@
-from flask import Flask, request
-from flask_restful import  Resource , Api
-from flask_cors import CORS
-from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
-from flask_swagger_ui import get_swaggerui_blueprint
+from flask import Flask, request # importing flask and request 
+from flask_restful import Api # importing api
+from flask_cors import CORS  # Importing cors
+from flask_sqlalchemy import SQLAlchemy #importing sqlalchemy
+from flask_migrate import Migrate  # importing migrate
+from flask_swagger_ui import get_swaggerui_blueprint #imprting swagger_ui
 
 
 
 
 
 
-app = Flask(__name__)
-api = Api(app)
+app = Flask(__name__) # createing a Flask application object 
+api = Api(app) # creating the api 
 
-CORS(app)
+CORS(app) # using cors for making it easy with the frontend
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:5432@localhost:5432/amazon'
-db= SQLAlchemy(app)
-migrate = Migrate(app,db)
-SWAGGER_URL = '/swagger'
-API_URL = '/static/swagger.json'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:5432@localhost:5432/amazon' #creating the connection with the database with all the pg info
+db= SQLAlchemy(app)  #creating a new instance and store it in the “db” variable
+migrate = Migrate(app,db) #make the migration function 
+SWAGGER_URL = '/swagger'   # URL for exposing Swagger UI
+API_URL = '/static/swagger.json'# Our API url
 SWAGGER_BLUEPRINT = get_swaggerui_blueprint(
-    SWAGGER_URL, 
+    SWAGGER_URL,   # Swagger UI static files will be mapped to
     API_URL,
-    config={
+    config={ # Swagger UI config overrides
         'app_name' : "AMAZON BOOKS"
 
     }
 )
-app.register_blueprint(SWAGGER_BLUEPRINT, url_prefix = SWAGGER_URL)
+app.register_blueprint(SWAGGER_BLUEPRINT, url_prefix = SWAGGER_URL) # the connection for swagger
 
-class Amazon(db.Model):
+class Amazon(db.Model):# "Amazon"class that inherits from the “db.Model” class For our table
     __tablename__ ='books'
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True) #we are defining six columns: “id”, “book_name”, “book_author”, “book_title”, “book_price”, “book_rating”, “book_photo”. The primary key of the table is the “id” column, “book_name”, “book_author”, “book_title”, “book_price”, “book_rating”, “book_photo” columns are unique and mandatory. We also define a “repr” method, which returns a string representation of the object.
     book_name = db.Column(db.String(150), unique=True, nullable=False)
     book_author = db.Column(db.String(150), unique=True, nullable=False)
     book_title = db.Column(db.String(150), unique=True, nullable=False)
     book_price = db.Column(db.Integer)
     book_rating = db.Column(db.Integer)
     book_photo = db.Column(db.Text, unique=True, nullable=False)
-    def __int__(self, book_name, book_author, book_title, book_price, book_rating, book_photo):
+    def __int__(self, book_name, book_author, book_title, book_price, book_rating, book_photo): # the init method using it everytime calling the class for creating a new book.
         self.book_name = book_name
         self.book_author = book_author
         self.book_title = book_title
@@ -50,11 +50,11 @@ class Amazon(db.Model):
         return f"<book {self.book_name}>"
 
 
-@app.route('/home', methods=['POST', 'GET'])
+@app.route('/home', methods=['POST', 'GET'])#rout specific URL for home page 
 def home():
-    if request.method== 'POST':
-        if request.is_json:
-            data = request.get_json()
+    if request.method== 'POST':# knowing the request type and insure that's "POST"
+        if request.is_json:#Indicates if this request is JSON 
+            data = request.get_json() #Parses the incoming JSON request data and returns it
             new_book = Amazon(
                 book_name = data['book_name'],
                 book_author = data['book_author'],
@@ -64,14 +64,14 @@ def home():
                 book_photo = data['book_photo']
 
 
-            )
-            db.session.add(new_book)
-            db.session.commit()
-            return{"messages": f"book {new_book.book_name} has been created succesfully."}
+            ) #creating a new book with it's new data 
+            db.session.add(new_book) #adding the new book in the databse
+            db.session.commit()#as the work done with the Session includes new data to be persisted to the database
+            return{"messages": f"book {new_book.book_name} has been created succesfully."}# returing a message with the new book name
         else:
-            return {"error" : "error creatin book"}
-    elif request.method == 'GET':
-         BOOKS = Amazon.query.all()
+            return {"error" : "error creatin book"}# returing error for creation the book
+    elif request.method == 'GET': # knowing the request type and insure that's "GET"
+         BOOKS = Amazon.query.all() #Here, we use the User.query.all() method to retrieve all the books from the database
          results = [
              {
                  "book_name" : book.book_name,
@@ -81,14 +81,14 @@ def home():
                  "book_rating" : book.book_rating,
                  "book_photo" : book.book_photo
 
-             } for book in BOOKS
+             } for book in BOOKS #loobing for all Books and add all the books in results
          ]
-         return {"BOOKS": results}
+         return {"BOOKS": results} # returing the books looped for 
 
-@app.route('/update_delete/<book_id>', methods=['GET', 'PUT', 'DELETE'])
-def book_by_id(book_id):
-    book =  Amazon.query.get_or_404(book_id)
-    if request.method == 'GET':
+@app.route('/update_delete/<book_id>', methods=['GET', 'PUT', 'DELETE'])#rout specific URL for update_delete page the have ['GET', 'PUT', 'DELETE'] for get and update and delete by specific ID for a book 
+def book_by_id(book_id):# function for getting a book by a specific id 
+    book =  Amazon.query.get_or_404(book_id)#get a book by it's id and 404 errors instead of returning None if didn't got it:
+    if request.method == 'GET':# knowing the request type and insure that's "GET"
         response = {
                     
                     "book_name" : book.book_name,
@@ -98,25 +98,25 @@ def book_by_id(book_id):
                     "book_rating" : book.book_rating,
                     "book_photo" : book.book_photo
             }
-        return{"message": "success", "book":response} 
-    elif request.method == 'PUT':
-        data = request.get_json()
+        return{"message": "success", "book":response} #return a message by the response for the book searching for by it's id  
+    elif request.method == 'PUT':# else if for the request type method and ensure that it's for updatting
+        data = request.get_json()#Parses the incoming JSON request data and returns it in data 
         book.book_name = data['book_name']
         book.book_author = data['book_author']
         book.book_title = data['book_title']
         book.book_price = data['book_price']
         book.book_rating = data['book_rating']
         book.book_photo = data['book_photo']
-        db.session .add(book)
-        db.session.commit()
-        return {"message": f'Book {book.book_name} succesfully updated'}
-    elif request.method == 'DELETE':
-        db.session.delete(book)
-        db.session.commit()
-        return {"message" : f'book {book.book_name} succesfully deleted'}
+        db.session.add(book)#adding the new book in the databse
+        db.session.commit()#as the work done with the Session includes new data to be persisted to the database
+        return {"message": f'Book {book.book_name} succesfully updated'}#returing message with the updated book name
+    elif request.method == 'DELETE':#else if for ensure the the request method is delete 
+        db.session.delete(book)#deleting a book in the databse with it's id
+        db.session.commit()#as the work done with the Session includes new data to be persisted to the database
+        return {"message" : f'book {book.book_name} succesfully deleted'}#returing a message that's the book deleted succesfully
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True)# running the app
 
 
 
