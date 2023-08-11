@@ -130,5 +130,16 @@ curl --location --request DELETE 'http://127.0.0.1:5000/update_delete/4' \
   "message": "book how to make api in python succesfully deleted"
  }
 ```
+**login method**
+- have to add a username and password and will added in the data base but before adding it will be hashed 
+-  to run it you have to add 'http://127.0.0.1:5000/login 
+
+**logout** 
+- have to add for the link 'http://127.0.0.1:5000/logout
+- will get logged out
+**protected method**
+- have to add / protected 
+- have to add the token got from the logged in method in the authorization in token filed and make request will get hello with user name 
+
 **Postman Documentation Link** 😉 
   -'https://documenter.getpostman.com/view/28958841/2s9XxzvYhL'\
