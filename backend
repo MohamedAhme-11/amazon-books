@@ -1,12 +1,12 @@
-from flask import Flask, request # importing flask and request 
+from flask import Flask, request, jsonify,make_response, session # importing flask and request 
 from flask_restful import Api # importing api
 from flask_cors import CORS  # Importing cors
 from flask_sqlalchemy import SQLAlchemy #importing sqlalchemy
 from flask_migrate import Migrate  # importing migrate
 from flask_swagger_ui import get_swaggerui_blueprint #imprting swagger_ui
-
-
-
+from flask_jwt_extended import JWTManager, get_jwt_identity, create_access_token, jwt_required
+from werkzeug.security import generate_password_hash, check_password_hash
+from flask_jwt_extended import unset_jwt_cookies
 
 
 
@@ -16,7 +16,11 @@ api = Api(app) # creating the api
 CORS(app) # using cors for making it easy with the frontend
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:5432@localhost:5432/amazon' #creating the connection with the database with all the pg info
+# Configure JWT (JSON Web Token) settings
+app.config['JWT_SECRET_KEY'] = 'your-secret-key'
+jwt = JWTManager
 db= SQLAlchemy(app)  #creating a new instance and store it in the “db” variable
+jwt = JWTManager(app)
 migrate = Migrate(app,db) #make the migration function 
 SWAGGER_URL = '/swagger'   # URL for exposing Swagger UI
 API_URL = '/static/swagger.json'# Our API url
@@ -48,7 +52,19 @@ class Amazon(db.Model):# "Amazon"class that inherits from the “db.Model” cla
         self.book_photo = book_photo
     def repr(self):
         return f"<book {self.book_name}>"
+# Define the User model
+class UserModel(db.Model):
+    __tablename__ = 'users'
 
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(80), unique=True, nullable=False)
+    password_hash = db.Column(db.String(128), nullable=False)
+
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
 
 @app.route('/home', methods=['POST', 'GET'])#rout specific URL for home page 
 def home():
@@ -115,9 +131,42 @@ def book_by_id(book_id):# function for getting a book by a specific id
         db.session.commit()#as the work done with the Session includes new data to be persisted to the database
         return {"message" : f'book {book.book_name} succesfully deleted'}#returing a message that's the book deleted succesfully
 
-if __name__ == "__main__":
-    app.run(debug=True)# running the app
+# Define the login route
+@app.route('/login', methods=['POST'])
+def login():
+    username = request.json.get('username')
+    password = request.json.get('password')
+    # Find the user by username in the database
+    user = UserModel.query.filter_by(username=username).first()
+  
 
+    if  user and user.check_password(password,):
+        access_token = create_access_token(identity=user.username) # Create an access token for the authenticated user
+        response = jsonify({'access_token': access_token})
+        return response, 200
+    else:
+        return jsonify({'error': 'Invalid credentials'}), 401
+
+
+# Define the protected route that requires authentication
+@app.route('/protected', methods=['GET'])
+@jwt_required()
+def protected_route():
+    current_user = get_jwt_identity()
+    # Return a message indicating successful authentication
+    return jsonify({'message': f'hello, {current_user}! you have access to this protected route'}),200
+       
+# Define the logout route
+@app.route('/logout', methods=['POST'])
+@jwt_required()
+def logout():
+    response = jsonify({'message': 'Logged out successfully'})
+    unset_jwt_cookies(response)# Unset JWT cookies to log the user out
+    return response, 200    
+    
+
+if __name__ == "__main__":
+  app.run(debug=True)# running the app
 
 
 
